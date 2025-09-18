@@ -6,14 +6,15 @@ import { Cie } from "../../models/cie.model.js";
 
 const addCie = asyncHandler(async(req,res)=>{
     const userId=new mongoose.Types.ObjectId(req.user._id)
-    const {description,date,time,venue} = req.body
+    const {syllabus,subjectName,date,time,venue} = req.body
     let forWhom=req.body.for
-    if(!description || !date || !time || !venue) throw new ApiError(401,"provide all fields")
+    if(!syllabus || !subjectName || !date || !time || !venue) throw new ApiError(401,"provide all fields")
     if(!forWhom) forWhom="All"
 
     const cie=await Cie.create({
         uploadedBy:userId,
-        description:description,
+        syllabus:syllabus,
+        subjectName:subjectName,
         date:new Date(date),
         time:time,
         venue:venue,
@@ -27,11 +28,12 @@ const addCie = asyncHandler(async(req,res)=>{
 })
 
 const updateCie = asyncHandler(async(req,res)=>{
-    const {description,date,time,venue} = req.body
+    const {syllabus,subjectName,date,time,venue} = req.body
     const forWhom=req.body.for
 
     let matchedStage={}
-    if(description) matchedStage.description=description
+    if(syllabus) matchedStage.syllabus=syllabus
+    if(subjectName) matchedStage.subjectName=subjectName
     if(date) matchedStage.date= new Date(date)
     if(time) matchedStage.time=time
     if(venue) matchedStage.venue=venue

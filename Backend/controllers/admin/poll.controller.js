@@ -26,7 +26,7 @@ const addPoll = asyncHandler(async(req,res)=>{
 const updatePoll = asyncHandler(async(req,res)=>{
     const {name,deadline,options,for:forWhom}=req.body
     const {id}=req.params
-
+    
     let matchedStage={}
     if(name) matchedStage.name=name
     if(options) matchedStage.options=options
