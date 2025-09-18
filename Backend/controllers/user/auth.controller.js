@@ -45,7 +45,7 @@ const callbackController = (req, res, next) => {
       res.cookie("accessToken", accessToken, options);
 
       // Redirect to frontend with token (optional)
-      res.redirect("http://localhost:3000/");
+      res.redirect("http://localhost:5000/");
     } catch (e) {
       console.error("Token creation error:", e);
       res.redirect("/?error=token_failed");
