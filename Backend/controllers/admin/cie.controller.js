@@ -74,8 +74,7 @@ const getCies = asyncHandler(async(req,res)=>{
         for: 0,
         __v: 0,
         _id: 0,
-        createdAt: 0,
-        updatedAt: 0,
+        createdAt: 0
         },
     }
 
@@ -95,7 +94,7 @@ const getCies = asyncHandler(async(req,res)=>{
                     cieProjection
                 ],
                 upcomingCies:[
-                    { $match:{ date: { $gt: new Date() } } },
+                    { $match:{ date: { $gte: new Date() } } },
                     userLookup,
                     {$unwind:'$uploadedBy'},
                     cieProjection

@@ -65,7 +65,7 @@ const getEvents = asyncHandler(async(req,res)=>{
                     eventProjection
                 ],
                 upcomingEvents:[
-                    { $match:{ date: { $gt: new Date() } }, },
+                    { $match:{ date: { $gte: new Date() } }, },
                     eventProjection
                 ],
             }

@@ -53,6 +53,7 @@ const getPolls = asyncHandler(async(req,res)=>{
             for: 1,
             totalVotes: 1,
             voteCounts: 1,
+            updatedAt:1
         }
     }
     
@@ -73,7 +74,7 @@ const getPolls = asyncHandler(async(req,res)=>{
                 ],
                 upcomingPolls:[
                     {
-                        $match: { deadline:{ $gt:new Date() } }
+                        $match: { deadline:{ $gte:new Date() } }
                     },
                     withStatsProjection
                 ],
