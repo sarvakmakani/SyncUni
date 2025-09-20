@@ -10,7 +10,7 @@ const getEvents = asyncHandler(async(req,res)=>{
         {
             $match:{
                 $and: [
-                    { date: { $gt: new Date() } }, 
+                    { date: { $gte: new Date() } }, 
                     {
                         $or: [
                             { for: year_dept }, 

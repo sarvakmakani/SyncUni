@@ -12,7 +12,7 @@ const getForms = asyncHandler(async (req, res) => {
     {
       $match: {
         $and: [
-          { deadline: { $gt: new Date() } },
+          { deadline: { $gte: new Date() } },
           {
             $or: [{ for: year_dept }, { for: "All" }],
           },
@@ -21,29 +21,29 @@ const getForms = asyncHandler(async (req, res) => {
     },
     {
       $project: {
-        uploadedBy: 0,
+        responseLink:0,
         for: 0,
         __v: 0,
       },
     },
   ]);
 
-  // attach submission status for each form
-  const formsWithStatus = await Promise.all(
-    forms.map(async (form) => {
-      const submitted = await FormResponse.findOne({
-        formId: form._id,
-        userId: req.user._id,
-      });
-      return {
-        ...form,
-        alreadySubmitted: !!submitted, // true if found
-      };
-    })
-  );
+  // // attach submission status for each form
+  // const formsWithStatus = await Promise.all(
+  //   forms.map(async (form) => {
+  //     const submitted = await FormResponse.findOne({
+  //       formId: form._id,
+  //       userId: req.user._id,
+  //     });
+  //     return {
+  //       ...form,
+  //       alreadySubmitted: !!submitted, // true if found
+  //     };
+  //   })
+  // );
 
   return res.json(
-    new ApiResponse(200, formsWithStatus, "forms fetched successfully")
+    new ApiResponse(200, forms, "forms fetched successfully")
   );
 });
 
