@@ -1,19 +1,21 @@
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import ApiError from "../../utils/ApiError.js"
 import { Poll } from "../../models/poll.model.js";
-import mongoose from "mongoose";
+import mongoose from "mongoose"
+import ApiResponse from "../../utils/ApiResponse.js";
 
 const addPoll = asyncHandler(async(req,res)=>{
     const {name,deadline,options,for:forWhom}=req.body
     if(!name || !deadline || options.length==0) throw new ApiError(401,"provide all details")
     if(!forWhom) forWhom="All"
+    const userId=new mongoose.Types.ObjectId(req.user._id)
 
     const poll=await Poll.create({
-        name,
+        name:name,
         deadline:new Date(deadline),
-        options,
-        userId,
-        forWhom
+        options:options,
+        uploadedBy:userId,
+        for:forWhom
     })
     if(!poll) throw new ApiError(500,"Poll creating failed")
     
@@ -53,8 +55,28 @@ const getPolls = asyncHandler(async(req,res)=>{
             for: 1,
             totalVotes: 1,
             voteCounts: 1,
-            updatedAt:1
+            updatedAt:1,
+            uploadedBy:1
         }
+    }
+
+    const userLookup = {
+        $lookup: {
+            from: "users",
+            localField: "uploadedBy",
+            foreignField: "_id",
+            as: "uploadedBy",
+            pipeline: [
+                {
+                    $project: {
+                        name: 1,
+                        email: 1,
+                        avatar: 1,
+                        _id: 0,
+                    },
+                },
+            ],
+        },
     }
     
     const result=await Poll.aggregate([
@@ -64,23 +86,32 @@ const getPolls = asyncHandler(async(req,res)=>{
                     {
                         $match: {uploadedBy:userId}
                     },
+                    userLookup,
+                    {$unwind:'$uploadedBy'},
                     withStatsProjection
                 ],
                 pastPolls:[
                     {
                         $match: { deadline:{ $lt:new Date() } }
                     },
+                    userLookup,
+                    {$unwind:'$uploadedBy'},
                     withStatsProjection
                 ],
                 upcomingPolls:[
                     {
                         $match: { deadline:{ $gte:new Date() } }
                     },
+                    userLookup,
+                    {$unwind:'$uploadedBy'},
                     withStatsProjection
                 ],
             }
         }
     ])
+
+    console.log(result[0].myPolls);
+    
 
     return res.json(
         new ApiResponse(200,result[0],"poll fetched successfully")

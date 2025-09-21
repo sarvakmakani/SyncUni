@@ -4,8 +4,20 @@ import { Bell, Search, Cloud, PanelLeft, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import node from "../public/ref2.png";
 import Link from "next/link";
+import { useState,useEffect } from "react";
+
 
 const Header = ({ toggleSidebar }) => {
+  
+  const [user, setUser] = useState(null);
+  
+    useEffect(() => {
+      fetch("http://localhost:5000/auth/me", { credentials: "include" })
+        .then(res => res.json())
+        .then(data => setUser(data.user))
+        .catch(err => console.log("Not logged in"));
+    }, []);
+
   return (
     <header className="bg-[#1f2a5c] w-full py-4 px-4 shadow-sm text-white">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -61,12 +73,22 @@ const Header = ({ toggleSidebar }) => {
             </div>
             <ChevronDown className="w-4 h-4" />
           </div> */}
-          <Link
-            href="/login"
-            className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#47c0e8] to-[#3b82f6] text-white font-medium text-sm hover:opacity-90 transition"
-          >
-            Login
-          </Link>
+          <div className="flex items-center gap-4">
+          {user ? (
+            // Show user name if logged in
+            <span className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#47c0e8] to-[#3b82f6] text-white font-medium text-sm">
+              {user.name}
+            </span>
+          ) : (
+            // Login link if not logged in
+            <Link
+              href="/login"
+              className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#47c0e8] to-[#3b82f6] text-white font-medium text-sm hover:opacity-90 transition"
+            >
+              Login
+            </Link>
+          )}
+        </div>
         </div>
       </div>
     </header>

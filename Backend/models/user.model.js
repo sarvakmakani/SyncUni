@@ -51,6 +51,7 @@ userSchema.methods.generateAccessToken = function () {
       googleId: this.googleId,
       email: this.email,
       idNo: this.idNo, 
+      isAdmin:this.isAdmin
     },
     process.env.ACCESS_TOKEN_SECRET_KEY,
     { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
@@ -62,6 +63,7 @@ userSchema.methods.generateRefreshToken = function () {
     {
       _id: this._id,
       googleId: this.googleId,
+      isAdmin:this.isAdmin
     },
     process.env.REFRESH_TOKEN_SECRET_KEY,
     { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }

@@ -6,20 +6,21 @@ import { asyncHandler } from "../../utils/asyncHandler.js";
 import { FormResponse } from "../../models/formResponse.model.js";
 
 const addForm = asyncHandler(async(req,res)=>{
-    const {name,description,deadline,for:forWhom,googleFormLink,responseLink}=req.body
+    const {title:name,description,deadline,for:forWhom="All",formLink:googleFormLink,responseLink}=req.body
 
     const userId=new mongoose.Types.ObjectId(req.user._id)
+    console.log(userId);
+    
     if(!name || !deadline) throw new ApiError(401,"provide all fields")
-    if(!forWhom) forWhom="All"
 
     const form=await Form.create({
         name:name,
         description:description ?? "",
         deadline:new Date(deadline),
-        userId,
-        forWhom,
-        googleFormLink,
-        responseLink
+        uploadedBy:userId,
+        for:forWhom,
+        googleFormLink:googleFormLink,
+        responseLink:responseLink
     })
     if(!form) throw new ApiError(500,"Form creating failed")
     
@@ -71,10 +72,7 @@ const getForms = asyncHandler(async(req,res)=>{
 
     const formProjection={
         $project: {
-            for: 0,
             __v: 0,
-            createdAt: 0,
-            updatedAt: 0,
         },
     }
 
@@ -150,9 +148,19 @@ const getForms = asyncHandler(async(req,res)=>{
 //     )
 // })
 
+const deleteForm=asyncHandler(async(req,res)=>{
+    const {id}=req.params
+    const form=await Form.findById(id)
+    if(!form) throw new ApiError(404,"no such form found")
+    await Form.findByIdAndDelete(id)
+    return res.json(
+        new ApiResponse(200,{},"form deleted")
+    )
+})
+
 export {
     addForm,
     updateForm,
     getForms,
-    // formStatus
+    deleteForm
 }
