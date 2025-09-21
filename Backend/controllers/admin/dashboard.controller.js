@@ -32,10 +32,10 @@ const getStatistics=asyncHandler(async(req,res)=>{
         new ApiResponse(
             200,{
                 name:name,
-                activeForms:forms.length,
-                activePolls:polls.length,
-                activeEvents:events.length,
-                valutItems:valutItems.length,
+                formsCount:forms.length,
+                pollsCount:polls.length,
+                eventsCount:events.length,
+                vaultItemsCount:valutItems.length,
                 forms:recentForms
             },
             "statistics fetched successfully"

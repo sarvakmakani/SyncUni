@@ -58,9 +58,38 @@ const getStatistics=asyncHandler(async(req,res)=>{
         }
       }
     ])
-    console.log(announcements);
     
-    
+    let date=new Date()
+    let lastDate=new Date()
+    lastDate.setDate(lastDate.getDate()+7)
+
+
+    const formsDueThisWeek=await Form.countDocuments({
+      deadline:{ $gte:date,$lte:lastDate }
+    })    
+
+    lastDate.setDate(date.getDate()+1)
+    const pollsEndingSoon=await Poll.countDocuments({
+      deadline:{ $gte:date,$lte:lastDate }
+    })
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(date.getDate() - 7);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const newVaultItems=await Vault.countDocuments({
+      createdAt:{ $gte:sevenDaysAgo,$lte:date }
+    })
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const todayEvents = await Event.countDocuments({
+        date: { $gte: todayStart, $lte: todayEnd }
+    });
 
     return res
     .json(
@@ -73,7 +102,11 @@ const getStatistics=asyncHandler(async(req,res)=>{
                 activeEvents:events.length,
                 valutItems:valutItems.length,
                 forms:recentForms,
-                announcements:announcements
+                announcements:announcements,
+                formsDueThisWeek:formsDueThisWeek,
+                pollsEndingSoon:pollsEndingSoon,
+                todayEvents:todayEvents,
+                newVaultItems:newVaultItems
             },
             "cies fetched successfully"
         )
