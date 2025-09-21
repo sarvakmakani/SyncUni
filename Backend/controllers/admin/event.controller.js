@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { Event } from "../../models/event.model.js";
 import ApiResponse from "../../utils/ApiResponse.js";
+import ApiError from "../../utils/ApiError.js";
 
 const addEvent = asyncHandler(async(req,res)=>{
     const {name,description,date,time,venue,for:forWhom}=req.body
@@ -16,7 +17,7 @@ const addEvent = asyncHandler(async(req,res)=>{
         date:new Date(date),
         time,
         venue,
-        userId,
+        uploadedBy:userId,
         forWhom
     })
     if (!event) throw new ApiError(500, "EVENT addition failed");
@@ -29,8 +30,9 @@ const addEvent = asyncHandler(async(req,res)=>{
 const updateEvent = asyncHandler(async(req,res)=>{
     const {name,description,date,time,venue,for:forWhom}=req.body
     const {id}=req.params
+    const userId=new mongoose.Types.ObjectId(req.user._id)
 
-    let matchedStage={}
+    let matchedStage={uploadedBy:userId}
     if(name) matchedStage.name=name
     if(description) matchedStage.description=description
     if(date) matchedStage.date= new Date(date)
@@ -47,13 +49,22 @@ const updateEvent = asyncHandler(async(req,res)=>{
 })
 
 const getEvents = asyncHandler(async(req,res)=>{
-    
-    const eventProjection={
-        $project:{
-            uploadedBy:0,
-            for:0,
-            __v:0,
-            _id:0
+
+
+    const userLookUp={
+        $lookup:{
+            from:'users',
+            localField:'uploadedBy',
+            foreignField:'_id',
+            as:'uploadedBy',
+            pipeline:[{
+                $project:{
+                    name:1,
+                    email:1,
+                    avatar:1,
+                    _id:0
+                }
+            }]
         }
     }
 
@@ -62,14 +73,16 @@ const getEvents = asyncHandler(async(req,res)=>{
             $facet:{
                 pastEvents:[
                     { $match:{ date: { $lt: new Date() } }, },
-                    eventProjection
+                    userLookUp,
+                    {$unwind:'$uploadedBy'},
                 ],
                 upcomingEvents:[
                     { $match:{ date: { $gte: new Date() } }, },
-                    eventProjection
+                    userLookUp,
+                    {$unwind:'$uploadedBy'},
                 ],
             }
-        }
+        },
     ])
     return res
     .json(
@@ -77,8 +90,20 @@ const getEvents = asyncHandler(async(req,res)=>{
     )
 })
 
+const deleteEvent=asyncHandler(async(req,res)=>{
+    const {id}=req.params
+    const event=await Event.findById(id)
+    if(!event) throw new ApiError(404,"no event found")
+    
+    await Event.findByIdAndDelete(id)
+    return res.json(
+        new ApiResponse(200,{},"event deleted")
+    )
+})
+
 export {
     addEvent,
     updateEvent,
-    getEvents
+    getEvents,
+    deleteEvent
 }

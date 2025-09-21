@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState,useEffect } from "react";
 import {
   CalendarCheck,
   FileText,
@@ -7,6 +7,7 @@ import {
   MessageCircle,
   Bell,
 } from "lucide-react";
+import axios from "axios";
 
 const Hero = () => {
   const today = new Date().toLocaleDateString("en-US", {
@@ -16,32 +17,58 @@ const Hero = () => {
     day: "numeric",
   });
 
+  const [data,setData]=useState([])
+  // Fetch polls
+  const fetchData = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/dashboard", {
+        withCredentials: true,
+      });
+      setData(res.data.data); // ✅ contains alreadyVoted
+    } catch (err) {
+      console.error("Error fetching polls:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  if (!data) {
+    return (
+      <section className="w-full px-4 py-6 text-center text-gray-600">
+        Loading dashboard...
+      </section>
+    );
+  }
+
+  // ✅ Dynamic cards using backend data
   const cards = [
     {
       title: "Active Forms",
-      count: 8,
-      sub: "3 due this week",
+      count: data.activeForms,
+      sub: `${data.activeForms} available now`,
       icon: <FileText className="w-6 h-6 text-blue-500" />,
       color: "from-blue-100 to-blue-50",
     },
     {
       title: "Active Polls",
-      count: 3,
-      sub: "1 ending soon",
+      count: data.activePolls,
+      sub: `${data.activePolls} running`,
       icon: <MessageCircle className="w-6 h-6 text-orange-500" />,
       color: "from-orange-100 to-orange-50",
     },
     {
       title: "Vault Items",
-      count: 24,
-      sub: "5 new this week",
+      count: data.valutItems,
+      sub: `${data.valutItems} uploaded`,
       icon: <Archive className="w-6 h-6 text-green-500" />,
       color: "from-green-100 to-green-50",
     },
     {
       title: "Upcoming Events",
-      count: 12,
-      sub: "2 today",
+      count: data.activeEvents,
+      sub: `${data.activeEvents} upcoming`,
       icon: <CalendarCheck className="w-6 h-6 text-purple-500" />,
       color: "from-purple-100 to-purple-50",
     },
@@ -89,7 +116,7 @@ const Hero = () => {
       <div className="bg-gradient-to-r from-[#1f3582] to-[#3d5bc9] text-white rounded-3xl px-8 py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center shadow-lg">
         <div>
           <h1 className="text-3xl font-bold mb-2 tracking-tight">
-            Welcome back, Lakhan! 
+            Welcome back, {data.name}!
           </h1>
           <p className="text-white/80 text-sm">
             Stay updated with your university activities.
@@ -210,9 +237,9 @@ const Hero = () => {
       </div>
 
       {/* Recent Forms */}
-      <div className="bg-slate-800 shadow-lg rounded-2xl border border-gray-100 p-6 mt-10">
+      <div className="bg-white shadow-lg rounded-2xl border border-gray-100 p-6 mt-10">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-100">
+          <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-800">
             Recent Forms
           </h2>
           <button className="px-3 py-1 rounded-md text-sm font-medium bg-gray-100 hover:bg-gray-200 transition">
@@ -224,7 +251,7 @@ const Hero = () => {
           {forms.map((form) => (
             <div
               key={form.id}
-              className="p-5 rounded-xl border border-gray-500 hover:shadow-md transition bg-gray-50"
+              className="p-5 rounded-xl border border-gray-200 hover:shadow-md transition bg-gray-50"
             >
               <div className="flex justify-between items-center mb-3">
                 <div>

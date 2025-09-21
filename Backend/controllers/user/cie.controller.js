@@ -39,6 +39,7 @@ const getCies = asyncHandler(async(req,res)=>{
                 }]
             }
         },
+        {$unwind:'$uploadedBy'},
         {
             $project:{
                 for:0,

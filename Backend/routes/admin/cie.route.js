@@ -2,7 +2,8 @@ import { Router } from "express";
 import {
     addCie,
     updateCie,
-    getCies
+    getCies,
+    deleteCie
 } from "../../controllers/admin/cie.controller.js";
 import { verifyJWT } from "../../middlewares/auth.middleware.js";
 import isAdmin from "../../middlewares/isAdmin.middleware.js";
@@ -12,6 +13,6 @@ router.use(verifyJWT)
 router.use(isAdmin)
 
 router.route("/").post(addCie).get(getCies)
-router.route("/:id").patch(updateCie)
+router.route("/:id").patch(updateCie).delete(deleteCie)
 
 export default router;

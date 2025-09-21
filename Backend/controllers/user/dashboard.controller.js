@@ -45,6 +45,16 @@ const getStatistics=asyncHandler(async(req,res)=>{
 
     const valutItems=await Vault.find({uploadedBy:new mongoose.Types.ObjectId(req.user._id)})
     
+    console.log({
+                name:name,
+                activeForms:forms.length,
+                activePolls:polls.length,
+                activeEvents:events.length,
+                valutItems:valutItems.length,
+                forms:recentForms
+            });
+    
+
     return res
     .json(
         new ApiResponse(

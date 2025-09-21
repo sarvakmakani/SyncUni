@@ -71,14 +71,6 @@ const getCies = asyncHandler(async(req,res)=>{
         },
     }
 
-    const cieProjection = {
-        $project: {
-        for: 0,
-        __v: 0,
-        _id: 0,
-        createdAt: 0
-        },
-    }
 
     const result=await Cie.aggregate([
         {
@@ -87,19 +79,16 @@ const getCies = asyncHandler(async(req,res)=>{
                     { $match:{ uploadedBy:userId } },
                     userLookup,
                     {$unwind:'$uploadedBy'},
-                    cieProjection
                 ],
                 pastCies:[
                     { $match:{ date: { $lt: new Date() } } },
                     userLookup,
                     {$unwind:'$uploadedBy'},
-                    cieProjection
                 ],
                 upcomingCies:[
                     { $match:{ date: { $gte: new Date() } } },
                     userLookup,
                     {$unwind:'$uploadedBy'},
-                    cieProjection
                 ]
             }
         }
@@ -110,8 +99,20 @@ const getCies = asyncHandler(async(req,res)=>{
     )
 })
 
+const deleteCie=asyncHandler(async(req,res)=>{
+    const {id}=req.params
+    const cie=await Cie.findById(id)
+    if(!cie) throw new ApiError(404,"no cie found")
+    
+    await Cie.findByIdAndDelete(id)
+    return res.json(
+        new ApiResponse(200,{},"cie deleted")
+    )
+})
+
 export {
     addCie,
     updateCie,
-    getCies
+    getCies,
+    deleteCie
 }
