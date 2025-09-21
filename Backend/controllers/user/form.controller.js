@@ -8,6 +8,26 @@ const getForms = asyncHandler(async (req, res) => {
   const { idNo } = req.user;
   const year_dept = idNo.slice(0, -3);
 
+  
+    const userLookup = {
+        $lookup: {
+            from: "users",
+            localField: "uploadedBy",
+            foreignField: "_id",
+            as: "uploadedBy",
+            pipeline: [
+                {
+                    $project: {
+                        name: 1,
+                        email: 1,
+                        avatar: 1,
+                        _id: 0,
+                    },
+                },
+            ],
+        },
+    }
+
   let forms = await Form.aggregate([
     {
       $match: {
@@ -19,6 +39,8 @@ const getForms = asyncHandler(async (req, res) => {
         ],
       },
     },
+    userLookup,
+    {$unwind:'$uploadedBy'},
     {
       $project: {
         responseLink:0,
