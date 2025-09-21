@@ -16,7 +16,7 @@ const addNotification=asyncHandler(async(req,res)=>{
     })
     if(!notification) throw new ApiError(500,"notification creation failed")
 
-    return res.json(
+    return res.status(201).json(
         new ApiResponse(201,{},"notification created successfully")
     )
 })

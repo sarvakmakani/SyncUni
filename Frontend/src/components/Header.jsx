@@ -1,25 +1,70 @@
 "use client";
-import React from "react";
-import { Bell, Search, Cloud, PanelLeft, ChevronDown } from "lucide-react";
+import {
+  Bell,
+  Search,
+  Cloud,
+  PanelLeft,
+  ChevronDown,
+  LogOut,
+} from "lucide-react";
 import Image from "next/image";
-import node from "../public/ref2.png";
 import Link from "next/link";
-import { useState,useEffect } from "react";
+import axios from "axios";
+import { Toaster, toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import node from "../public/ref2.png";
+import {React, useState,useEffect } from "react";
 
 
 const Header = ({ toggleSidebar }) => {
-  
+  const [unreadCount,setUnreadCount]=useState(0)
   const [user, setUser] = useState(null);
-  
-    useEffect(() => {
-      fetch("http://localhost:5000/auth/me", { credentials: "include" })
-        .then(res => res.json())
-        .then(data => setUser(data.user))
-        .catch(err => console.log("Not logged in"));
-    }, []);
+  const router = useRouter();
+
+  // Fetch user data on component mount
+  const fetchUser = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/auth/me", {
+        withCredentials: true,
+      });
+      setUser(res.data.user);
+
+      const notifRes = await axios.get("http://localhost:5000/notification/count", {
+        withCredentials: true,
+      });
+      
+      setUnreadCount(notifRes.data.data);
+
+    } catch (err) {
+      console.log("User not logged in:", err);
+      setUser(null); // Ensure user is null if not logged in
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await axios.post(
+        "http://localhost:5000/auth/logout",
+        {},
+        { withCredentials: true }
+      );
+      setUser(null);
+      toast.success("Logged out successfully!");
+      router.push("/login"); // Redirect to login page
+    } catch (err) {
+      console.error("Logout failed:", err);
+      toast.error("Logout failed. Please try again.");
+    }
+  };
 
   return (
     <header className="bg-[#1f2a5c] w-full py-4 px-4 shadow-sm text-white">
+      <Toaster />
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Left Section */}
         <div className="flex items-center gap-3 sm:gap-5">
@@ -40,47 +85,36 @@ const Header = ({ toggleSidebar }) => {
           </button>
         </div>
 
-        {/* Center Search Bar */}
-        {/* <div className="hidden sm:flex items-center bg-white rounded-full px-4 py-2 w-full max-w-xl mx-8 shadow-sm">
-          <Search className="w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by address, location, or ID"
-            className="ml-3 w-full text-sm bg-transparent placeholder-gray-400 focus:outline-none text-black"
-          />
-          <button className="ml-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm px-4 py-1.5 rounded-full font-medium hover:opacity-90 transition">
-            Search
-          </button>
-        </div> */}
-
         {/* Right Section */}
         <div className="flex items-center gap-2 sm:gap-4">
           {/* Notification Bell */}
-          <Link 
-          href='/notifications'
-          className="p-2 hover:bg-white/10 rounded-full transition">
+          <Link
+            href='/notifications'
+            className="relative p-2 hover:bg-white/10 rounded-full transition"
+          >
             <Bell className="w-5 h-5" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 h-4 w-4 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold">
+                {unreadCount}
+              </span>
+            )}
           </Link>
 
-          {/* Profile section */}
-          {/* <div className="flex items-center gap-2 bg-[#324a91] px-3 py-1.5 rounded-full cursor-pointer hover:bg-[#3c599e] transition">
-            <div className="w-7 h-7 bg-white text-[#324a91] rounded-full flex items-center justify-center font-semibold text-sm">
-              L
-            </div>
-            <div className="hidden sm:block text-sm leading-tight">
-              <div className="font-semibold">LAKHAN</div>
-              <div className="text-xs text-white/70">Student</div>
-            </div>
-            <ChevronDown className="w-4 h-4" />
-          </div> */}
-          <div className="flex items-center gap-4">
+          {/* User and Logout section */}
           {user ? (
-            // Show user name if logged in
-            <span className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#47c0e8] to-[#3b82f6] text-white font-medium text-sm">
-              {user.name}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#47c0e8] to-[#3b82f6] text-white font-medium text-sm">
+                {user.name}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="p-2 hover:bg-white/10 rounded-lg transition"
+                title="Logout"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
           ) : (
-            // Login link if not logged in
             <Link
               href="/login"
               className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#47c0e8] to-[#3b82f6] text-white font-medium text-sm hover:opacity-90 transition"
@@ -88,7 +122,6 @@ const Header = ({ toggleSidebar }) => {
               Login
             </Link>
           )}
-        </div>
         </div>
       </div>
     </header>

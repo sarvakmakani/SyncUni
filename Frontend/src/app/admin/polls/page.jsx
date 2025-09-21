@@ -1,12 +1,8 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import { Toaster, toast } from "react-hot-toast";
 
-// Assuming PollOption and PollCard are correctly implemented elsewhere.
-// Since they were not provided, a placeholder is used for PollCard's functionality.
-// If you have your own components, replace this placeholder logic with your components.
 const PollCard = ({ poll, handleDelete }) => {
-    // A helper function to format dates
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', {
@@ -17,44 +13,48 @@ const PollCard = ({ poll, handleDelete }) => {
     };
 
     const isExpired = new Date(poll.deadline) < new Date();
+    const totalVotes = poll.totalVotes || 0;
 
     return (
         <div className="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 hover:border-blue-500 transition-all">
-            {/* Poll title and details */}
             <h3 className="text-xl font-semibold text-white">{poll.name}</h3>
             <div className="text-sm text-gray-400 mb-2">
                 <p><strong>Posted on:</strong> {formatDate(poll.updatedAt)}</p>
-                {/* Assuming 'uploadedBy' or similar is the property for the author */}
-                <p><strong>Posted by:</strong> {poll.uploadedBy?.name || 'Unknown'}</p> 
+                <p><strong>Posted by:</strong> {poll.uploadedBy?.name || 'Unknown'}</p>
                 <p className={isExpired ? "text-red-400" : ""}>
                     <strong>Deadline:</strong> {formatDate(poll.deadline)}
                 </p>
-          </div>
+            </div>
             
-            {/* Displaying options and their votes */}
             <div className="mt-4">
                 <h4 className="font-medium text-white mb-2">Options and Votes:</h4>
                 <ul className="list-none space-y-2">
-                    {poll.options.map((option, index) => (
-                        <li key={index} className="bg-slate-700 rounded-lg p-3">
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-300">{option.text}</span>
-                                {/* Accessing option-wise votes. Your backend needs to provide this. */}
-                                <span className="text-sm font-semibold text-[#47c0e8]">
-                                    {option.votes} Votes
-                                </span>
-                            </div>
-                        </li>
-                    ))}
+                    {poll.options.map((option, index) => {
+                        const votes = poll.voteCounts ? (poll.voteCounts[index] || 0) : 0;
+                        const percentage = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+                        
+                        return (
+                            <li key={index} className="bg-slate-700 rounded-lg p-3 relative overflow-hidden">
+                                <div
+                                    className="absolute inset-0 h-full bg-blue-500/30"
+                                    style={{ width: `${percentage}%` }}
+                                />
+                                <div className="relative z-10 flex justify-between items-center">
+                                    <span className="text-gray-300">{option}</span>
+                                    <span className="text-sm font-semibold text-white">
+                                        {votes} Votes ({percentage}%)
+                                    </span>
+                                </div>
+                            </li>
+                        );
+                    })}
                 </ul>
             </div>
 
-            {/* Total votes */}
             <p className="text-sm text-gray-400 mt-4">
-                <span className="font-semibold text-white">Total Votes:</span> {poll.totalVotes || 0}
+                <span className="font-semibold text-white">Total Votes:</span> {totalVotes}
             </p>
 
-            {/* Delete button */}
             <div className="mt-4 flex justify-end">
                 <button
                     onClick={() => handleDelete(poll._id)}
@@ -71,52 +71,66 @@ export default function FacultyPolls() {
     const [myPolls, setMyPolls] = useState([]);
     const [pastPolls, setPastPolls] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [question, setQuestion] = useState("");
-    const [options, setOptions] = useState(["", ""]);
-    const [endDate, setEndDate] = useState("");
-    const [forWhom, setForWhom] = useState("All");
+    
+    // Updated form state to include `forWhom`
+    const [formData, setFormData] = useState({
+        question: "",
+        options: ["", ""],
+        endDate: "",
+        forWhom: "All",
+    });
 
-    // Fetch poll data from the backend on component mount
-    useEffect(() => {
-        const fetchPolls = async () => {
-            setIsLoading(true);
-            try {
-                const response = await fetch("http://localhost:5000/admin/poll", {
-                    credentials: "include",
-                });
-                if (!response.ok) {
-                    throw new Error("Failed to fetch polls.");
-                }
-                const data = await response.json();
+    const batches = ["23DCE", "24DCE", "25DCE", "All"];
 
-                // Set states based on the backend response structure
-                
-                setMyPolls(data.data.myPolls);
-                setPastPolls(data.data.pastPolls);
-            } catch (error) {
-                toast.error("Error fetching polls.");
-                console.error("Error fetching polls:", error);
-            } finally {
-                setIsLoading(false);
+    const fetchPolls = async () => {
+        try {
+            const response = await fetch("http://localhost:5000/admin/poll", {
+                credentials: "include",
+            });
+            if (!response.ok) {
+                throw new Error("Failed to fetch polls.");
             }
-        };
+            const data = await response.json();
+            
+            setMyPolls(data.data.myPolls);
+            setPastPolls(data.data.pastPolls);
+        } catch (error) {
+            toast.error("Error fetching polls.");
+            console.error("Error fetching polls:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchPolls();
     }, []);
 
+    const handleFormChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
     const handleOptionChange = (index, value) => {
-        const newOptions = [...options];
+        const newOptions = [...formData.options];
         newOptions[index] = value;
-        setOptions(newOptions);
+        setFormData(prev => ({ ...prev, options: newOptions }));
+    };
+
+    const handleBatchSelect = (batch) => {
+        setFormData(prev => ({ ...prev, forWhom: batch }));
     };
 
     const addOption = () => {
-        if (options.length < 4) setOptions([...options, ""]);
+        if (formData.options.length < 4) {
+            setFormData(prev => ({ ...prev, options: [...prev.options, ""] }));
+        }
     };
 
     const removeOption = (index) => {
-        if (options.length > 2) {
-            setOptions(options.filter((_, i) => i !== index));
+        if (formData.options.length > 2) {
+            const newOptions = formData.options.filter((_, i) => i !== index);
+            setFormData(prev => ({ ...prev, options: newOptions }));
         }
     };
 
@@ -124,17 +138,17 @@ export default function FacultyPolls() {
         e.preventDefault();
 
         if (
-            !question.trim() ||
-            options.some((opt) => !opt.trim()) ||
-            !endDate
+            !formData.question.trim() ||
+            formData.options.some(opt => !opt.trim()) ||
+            !formData.endDate ||
+            !formData.forWhom
         ) {
-            toast.error("Please fill all fields, including poll end date!");
+            toast.error("Please fill all fields, including target audience!");
             return;
         }
 
         try {
-            // Correctly map the array of option strings to the backend format
-            const optionsAsStrings = options.map(opt => opt);
+            const optionsAsStrings = formData.options.map(opt => opt);
 
             const response = await fetch("http://localhost:5000/admin/poll", {
                 method: "POST",
@@ -142,10 +156,10 @@ export default function FacultyPolls() {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    name: question,
-                    deadline: endDate,
-                    options: optionsAsStrings, // Changed to send array of strings
-                    for: forWhom,
+                    name: formData.question,
+                    deadline: formData.endDate,
+                    options: optionsAsStrings,
+                    for: formData.forWhom, // Correct field name for backend
                 }),
                 credentials: "include",
             });
@@ -154,19 +168,14 @@ export default function FacultyPolls() {
                 throw new Error("Failed to create poll.");
             }
 
-            const newPoll = await response.json();
-            
-            // Add the new poll to the myPolls state
-            setMyPolls((prevPolls) => [newPoll.data, ...prevPolls]);
-            
             toast.success("Poll created successfully!");
-
-            // Reset form
-            setQuestion("");
-            setOptions(["", ""]);
-            setEndDate("");
-            setForWhom("All");
-
+            setFormData({
+                question: "",
+                options: ["", ""],
+                endDate: "",
+                forWhom: "All",
+            });
+            fetchPolls();
         } catch (error) {
             toast.error("Error creating poll. Please try again.");
             console.error("Error creating poll:", error);
@@ -179,14 +188,11 @@ export default function FacultyPolls() {
                 method: "DELETE",
                 credentials: "include",
             });
-
             if (!response.ok) {
                 throw new Error("Failed to delete poll.");
             }
-
-            setMyPolls((prevPolls) => prevPolls.filter((poll) => poll._id !== id));
-            setPastPolls((prevPolls) => prevPolls.filter((poll) => poll._id !== id));
-            
+            setMyPolls(prevPolls => prevPolls.filter(poll => poll._id !== id));
+            setPastPolls(prevPolls => prevPolls.filter(poll => poll._id !== id));
             toast.success("Poll deleted successfully!");
         } catch (error) {
             toast.error("Error deleting poll. Please try again.");
@@ -207,21 +213,20 @@ export default function FacultyPolls() {
                             type="text"
                             placeholder="Poll Question"
                             className="p-3 rounded-xl bg-slate-700 text-gray-200 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-[#47c0e8]"
-                            value={question}
-                            onChange={(e) => setQuestion(e.target.value)}
+                            name="question"
+                            value={formData.question}
+                            onChange={handleFormChange}
                             required
                         />
-
                         <input
                             type="date"
                             className="p-3 rounded-xl bg-slate-700 text-gray-200 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-[#47c0e8]"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
+                            name="endDate"
+                            value={formData.endDate}
+                            onChange={handleFormChange}
                             required
                         />
-                        
-                        {/* Poll Options */}
-                        {options.map((opt, i) => (
+                        {formData.options.map((opt, i) => (
                             <div key={i} className="flex items-center gap-2">
                                 <input
                                     type="text"
@@ -231,7 +236,7 @@ export default function FacultyPolls() {
                                     className="flex-1 p-3 rounded-xl bg-slate-700 text-gray-200 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-[#47c0e8]"
                                     required
                                 />
-                                {options.length > 2 && (
+                                {formData.options.length > 2 && (
                                     <button
                                         type="button"
                                         onClick={() => removeOption(i)}
@@ -242,8 +247,7 @@ export default function FacultyPolls() {
                                 )}
                             </div>
                         ))}
-
-                        {options.length < 4 && (
+                        {formData.options.length < 4 && (
                             <button
                                 type="button"
                                 onClick={addOption}
@@ -252,7 +256,25 @@ export default function FacultyPolls() {
                                 Add Option
                             </button>
                         )}
-                        
+                        <div className="mt-2">
+                            <label className="block text-sm text-gray-300 mb-2">Target Audience</label>
+                            <div className="flex flex-wrap gap-3">
+                                {batches.map((batch) => (
+                                    <button
+                                        type="button"
+                                        key={batch}
+                                        onClick={() => handleBatchSelect(batch)}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition border ${
+                                            formData.forWhom === batch
+                                                ? "bg-blue-600 text-white border-blue-600"
+                                                : "bg-slate-800 text-gray-300 border-gray-700 hover:bg-slate-700"
+                                        }`}
+                                    >
+                                        {batch}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                         <button
                             type="submit"
                             className="mt-6 w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium py-3 rounded-xl hover:opacity-90 transition"
@@ -262,41 +284,31 @@ export default function FacultyPolls() {
                     </form>
                 </div>
 
-                {isLoading ? (
-                    <div className="text-center text-white">Loading polls...</div>
-                ) : (
-                    <>
-                        <div className="mb-10">
-                            <h2 className="text-2xl font-semibold text-white mb-4">
-                                My Polls
-                            </h2>
-                            {myPolls.length === 0 ? (
-                                <p className="text-gray-400">No polls available.</p>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {myPolls.map((poll) => (
-                                        <PollCard key={poll._id} poll={poll} handleDelete={handleDelete} />
-                                    ))}
-                                </div>
-                            )}
+                <div className="mb-10">
+                    <h2 className="text-2xl font-semibold text-white mb-4">My Polls</h2>
+                    {myPolls.length === 0 ? (
+                        <p className="text-gray-400">No polls available.</p>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {myPolls.map((poll) => (
+                                <PollCard key={poll._id} poll={poll} handleDelete={handleDelete} />
+                            ))}
                         </div>
+                    )}
+                </div>
 
-                        <div>
-                            <h2 className="text-2xl font-semibold text-white mb-4">
-                                Previous Polls
-                            </h2>
-                            {pastPolls.length === 0 ? (
-                                <p className="text-gray-400">No previous polls available.</p>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {pastPolls.map((poll) => (
-                                        <PollCard key={poll._id} poll={poll} handleDelete={handleDelete} />
-                                    ))}
-                                </div>
-                            )}
+                <div>
+                    <h2 className="text-2xl font-semibold text-white mb-4">Previous Polls</h2>
+                    {pastPolls.length === 0 ? (
+                        <p className="text-gray-400">No previous polls available.</p>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {pastPolls.map((poll) => (
+                                <PollCard key={poll._id} poll={poll} handleDelete={handleDelete} />
+                            ))}
                         </div>
-                    </>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );
