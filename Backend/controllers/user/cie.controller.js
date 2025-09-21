@@ -13,7 +13,7 @@ const getCies = asyncHandler(async(req,res)=>{
         {
             $match:{
                 $and: [
-                    { date: { $gt: new Date() } }, 
+                    { date: { $gte: new Date() } }, 
                     {
                         $or: [
                             { for: year_dept }, 
@@ -39,6 +39,7 @@ const getCies = asyncHandler(async(req,res)=>{
                 }]
             }
         },
+        {$unwind:'$uploadedBy'},
         {
             $project:{
                 for:0,

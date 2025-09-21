@@ -5,12 +5,12 @@ import ApiResponse from "../../utils/ApiResponse.js";
 
 const getEvents = asyncHandler(async(req,res)=>{
     const {idNo} =req.user
-    const year_dept = idNo.slice(0,-3)
+    const year_dept = idNo.slice(0,-3)  
     let events=await Event.aggregate([
         {
             $match:{
                 $and: [
-                    { date: { $gt: new Date() } }, 
+                    { date: { $gte: new Date() } }, 
                     {
                         $or: [
                             { for: year_dept }, 
@@ -29,6 +29,7 @@ const getEvents = asyncHandler(async(req,res)=>{
             }
         }
     ])
+    
     
     return res
     .json(

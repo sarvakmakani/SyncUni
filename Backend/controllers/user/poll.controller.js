@@ -16,7 +16,7 @@ const getPolls = asyncHandler(async (req, res) => {
     {
       $match: {
         $and: [
-          { deadline: { $gt: new Date() } },
+          { deadline: { $gte: new Date() } },
           {
             $or: [
               { for: year_dept },
@@ -58,7 +58,8 @@ const getPolls = asyncHandler(async (req, res) => {
         options: 1,
         _id: 1,
         alreadyVoted:1,
-        voteCounts:1
+        voteCounts:1,
+        totalVotes:1
       }
     }
   ]);
@@ -96,10 +97,12 @@ const votePoll = asyncHandler(async(req,res)=>{
       }
     });
     
+    const updatedPoll = await Poll.findById(id);
+    if (!updatedPoll) throw new ApiError(404, "Updated poll not found");
 
     return res
     .json(
-        new ApiResponse(200,vote,"voted successfully")
+        new ApiResponse(200,updatedPoll,"voted successfully")
     )
 })
 

@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";  
 const formSchema = new Schema(
   {
     name: {
@@ -9,7 +9,6 @@ const formSchema = new Schema(
     description: {
       type: String,
       trim: true,
-      required:true
     },
     deadline:{
       type:Date,
@@ -30,6 +29,15 @@ const formSchema = new Schema(
       type:String,
       enum:["22DCE","22DCSE","22DIT","23DCE","23DCSE","23DIT","24DCE","24DCSE","24DIT","25DCE","25DCSE","25DIT","All"],
       default:"All"
+    },
+    googleFormLink:{
+      type: String,
+      required: true,
+      trim: true
+    },
+    responseLink:{
+      type: String,
+      trim: true
     }
   },
   { timestamps: true }

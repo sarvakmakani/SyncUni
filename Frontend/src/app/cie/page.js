@@ -2,41 +2,68 @@
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
-import { CalendarDays, Clock, MapPin, FileText,BookOpen } from "lucide-react";
+import { CalendarDays, Clock, MapPin, FileText, BookOpen } from "lucide-react";
 import { motion } from "framer-motion";
+import axios from "axios";
 
 export default function CieAnnouncementsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [cieAnnouncements, setCieAnnouncements] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
-  // Example Data - Replace with API later
-  const [cieAnnouncements, setCieAnnouncements] = useState([
-    {
-      id: 1,
-      subject: "Machine Learning",
-      date: "2025-08-28",
-      time: "2:20 PM - 3:20 PM",
-      venue: "Room 301",
-      professor: "Prof. Kashyap Patel",
-      syllabus: "UNIT 5.",
-    },
-    {
-      id: 2,
-      subject: "DAA",
-      date: "2025-08-29",
-      time: "10:10 AM - 11:10 AM",
-      venue: "Room 205",
-      professor: "Prof. Premal Patel",
-      syllabus: "UNIT 7 & 8.",
-    },
-  ]);
+  // Helper function to format the date
+  const formatDate = (dateString) => {
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
 
-  // Later: Fetch from backend
-  // useEffect(() => {
-  //   fetch("/api/cie-announcements")
-  //     .then(res => res.json())
-  //     .then(data => setCieAnnouncements(data));
-  // }, []);
+  const fetchCieAnnouncements = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get("http://localhost:5000/cie", {
+        withCredentials: true,
+      });
+      // Assuming your API returns an array of CIE announcements in response.data.data
+      console.log(response.data.data);
+      
+      setCieAnnouncements(response.data.data);
+    } catch (err) {
+      console.error("Error fetching CIE announcements:", err);
+      setError(
+        err.response?.data?.message ||
+        "Failed to fetch CIE announcements. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCieAnnouncements();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-slate-950 text-white">
+        <p>Loading announcements...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-slate-950 text-white flex-col">
+        <p className="text-red-400">{error}</p>
+        <button onClick={fetchCieAnnouncements} className="mt-4 px-4 py-2 bg-blue-600 rounded-md">
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-slate-950 text-white">
@@ -63,55 +90,58 @@ export default function CieAnnouncementsPage() {
 
           {/* CIE Announcement Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {cieAnnouncements.map((cie, index) => (
-              <motion.div
-                key={cie.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="bg-slate-900 border border-slate-800 hover:border-[#47c0e8] 
-                 rounded-2xl p-6 shadow-md hover:shadow-xl 
-                 transition transform hover:-translate-y-1"
-              >
-                {/* Subject Name */}
-                <h2 className="text-xl font-bold text-[#47c0e8] mb-2">
-                  {cie.subject}
-                </h2>
+            {cieAnnouncements.length === 0 ? (
+              <p className="text-gray-400 text-lg">
+                No announcements available at the moment.
+              </p>
+            ) : (
+              cieAnnouncements.map((cie, index) => (
+                <motion.div
+                  key={cie._id || index}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  className="bg-slate-900 border border-slate-800 hover:border-[#47c0e8] 
+                rounded-2xl p-6 shadow-md hover:shadow-xl 
+                transition transform hover:-translate-y-1"
+                >
+                  {/* Subject Name */}
+                  <h2 className="text-xl font-bold text-[#47c0e8] mb-2">
+                    {cie.subjectName}
+                  </h2>
 
-                {/* Professor Name */}
-                <p className="text-gray-400 text-sm mb-4">
-                  Conducted by:{" "}
-                  <span className="font-medium">{cie.professor}</span>
-                </p>
+                    {/* Professor Name */}
+                  <p className="text-gray-400 text-sm mb-4">
+                    Conducted by: Prof.{" "}
+                    <span className="font-medium">{cie.uploadedBy.name}</span>
+                  </p>
 
-                {/* Date */}
-                <div className="flex items-center gap-2 text-gray-300 mb-2">
-                  <CalendarDays className="w-4 h-4" />
-                  <span>{cie.date}</span>
-                </div>
+                  {/* Date */}
+                  <div className="flex items-center gap-2 text-gray-300 mb-2">
+                    <CalendarDays className="w-4 h-4" />
+                    <span>{formatDate(cie.date)}</span>
+                  </div>
 
-                {/* Time */}
-                <div className="flex items-center gap-2 text-gray-300 mb-2">
-                  <Clock className="w-4 h-4" />
-                  <span>{cie.time}</span>
-                </div>
+                  {/* Time */}
+                  <div className="flex items-center gap-2 text-gray-300 mb-2">
+                    <Clock className="w-4 h-4" />
+                    <span>{cie.time}</span>
+                  </div>
 
-                {/* Venue */}
-                <div className="flex items-center gap-2 text-gray-300 mb-4">
-                  <MapPin className="w-4 h-4" />
-                  <span>{cie.venue}</span>
-                </div>
+                  {/* Venue */}
+                  <div className="flex items-center gap-2 text-gray-300 mb-4">
+                    <MapPin className="w-4 h-4" />
+                    <span>{cie.venue}</span>
+                  </div>
 
-                {/* Syllabus */}
-                <div className="flex items-start gap-2 text-gray-300 mb-4">
-                  <BookOpen className="w-4 h-4 mt-1" /> {/* optional icon */}
-                  <span className="text-sm">{cie.syllabus}</span>
-                </div>
-
-                {/* Optional Message */}
-                {/* <p className="text-gray-300 text-sm">{cie.message}</p> */}
-              </motion.div>
-            ))}
+                  {/* Syllabus */}
+                  <div className="flex items-start gap-2 text-gray-300 mb-4">
+                    <BookOpen className="w-4 h-4 mt-1" />
+                    <span className="text-sm">{cie.syllabus}</span>
+                  </div>
+                </motion.div>
+              ))
+            )}
           </div>
         </div>
       </div>

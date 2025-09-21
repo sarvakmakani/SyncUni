@@ -6,14 +6,15 @@ import { Cie } from "../../models/cie.model.js";
 
 const addCie = asyncHandler(async(req,res)=>{
     const userId=new mongoose.Types.ObjectId(req.user._id)
-    const {description,date,time,venue} = req.body
+    const {syllabus,subjectName,date,time,venue} = req.body
     let forWhom=req.body.for
-    if(!description || !date || !time || !venue) throw new ApiError(401,"provide all fields")
+    if(!syllabus || !subjectName || !date || !time || !venue) throw new ApiError(401,"provide all fields")
     if(!forWhom) forWhom="All"
 
     const cie=await Cie.create({
         uploadedBy:userId,
-        description:description,
+        syllabus:syllabus,
+        subjectName:subjectName,
         date:new Date(date),
         time:time,
         venue:venue,
@@ -27,11 +28,12 @@ const addCie = asyncHandler(async(req,res)=>{
 })
 
 const updateCie = asyncHandler(async(req,res)=>{
-    const {description,date,time,venue} = req.body
+    const {syllabus,subjectName,date,time,venue} = req.body
     const forWhom=req.body.for
 
     let matchedStage={}
-    if(description) matchedStage.description=description
+    if(syllabus) matchedStage.syllabus=syllabus
+    if(subjectName) matchedStage.subjectName=subjectName
     if(date) matchedStage.date= new Date(date)
     if(time) matchedStage.time=time
     if(venue) matchedStage.venue=venue
@@ -69,15 +71,6 @@ const getCies = asyncHandler(async(req,res)=>{
         },
     }
 
-    const cieProjection = {
-        $project: {
-        for: 0,
-        __v: 0,
-        _id: 0,
-        createdAt: 0,
-        updatedAt: 0,
-        },
-    }
 
     const result=await Cie.aggregate([
         {
@@ -86,19 +79,16 @@ const getCies = asyncHandler(async(req,res)=>{
                     { $match:{ uploadedBy:userId } },
                     userLookup,
                     {$unwind:'$uploadedBy'},
-                    cieProjection
                 ],
                 pastCies:[
                     { $match:{ date: { $lt: new Date() } } },
                     userLookup,
                     {$unwind:'$uploadedBy'},
-                    cieProjection
                 ],
                 upcomingCies:[
-                    { $match:{ date: { $gt: new Date() } } },
+                    { $match:{ date: { $gte: new Date() } } },
                     userLookup,
                     {$unwind:'$uploadedBy'},
-                    cieProjection
                 ]
             }
         }
@@ -109,8 +99,20 @@ const getCies = asyncHandler(async(req,res)=>{
     )
 })
 
+const deleteCie=asyncHandler(async(req,res)=>{
+    const {id}=req.params
+    const cie=await Cie.findById(id)
+    if(!cie) throw new ApiError(404,"no cie found")
+    
+    await Cie.findByIdAndDelete(id)
+    return res.json(
+        new ApiResponse(200,{},"cie deleted")
+    )
+})
+
 export {
     addCie,
     updateCie,
-    getCies
+    getCies,
+    deleteCie
 }

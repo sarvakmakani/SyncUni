@@ -7,7 +7,12 @@ const CieSchema = new Schema(
         ref:'User',
         required:true
     },
-    description: {   
+    syllabus: {   
+      type: String,
+      trim: true,
+      required:true
+    },
+    subjectName: {   
       type: String,
       trim: true,
       required:true

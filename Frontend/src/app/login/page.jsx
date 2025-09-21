@@ -12,7 +12,10 @@ export default function LoginPage() {
         </p>
 
         {/* Google Login Button */}
-        <button className="mt-6 flex items-center justify-center gap-2 w-full bg-white text-gray-800 rounded-lg py-2 font-medium hover:bg-gray-100 transition">
+        <button
+          onClick={() => (window.location.href = "http://localhost:5000/auth/google")}
+          className="mt-6 flex items-center justify-center gap-2 w-full bg-white text-gray-800 rounded-lg py-2 font-medium hover:bg-gray-100 transition"
+        >
           <img
             src="https://www.svgrepo.com/show/355037/google.svg"
             alt="Google Logo"
@@ -20,6 +23,7 @@ export default function LoginPage() {
           />
           Sign in with Google
         </button>
+
 
         {/* Sign Up Link */}
         <p className="mt-6 text-sm text-gray-400">

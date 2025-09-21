@@ -6,6 +6,7 @@ import { User } from "../../models/user.model.js";
 import { Vault } from "../../models/vault.model.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import ApiResponse from "../../utils/ApiResponse.js";
+import { Notification } from "../../models/notifications.model.js";
 
 const getStatistics=asyncHandler(async(req,res)=>{
     const {idNo} =req.user
@@ -32,7 +33,7 @@ const getStatistics=asyncHandler(async(req,res)=>{
             $or: [{ for: year_dept }, { for: "All" }],
           },
         ]
-    })
+    }).sort({createdAt:-1})
 
     const events=await Event.find({
         $and: [
@@ -44,7 +45,23 @@ const getStatistics=asyncHandler(async(req,res)=>{
     })
 
     const valutItems=await Vault.find({uploadedBy:new mongoose.Types.ObjectId(req.user._id)})
+
+    const announcements=await Notification.aggregate([
+      {
+        $match:{
+          $and: [
+            { createdAt: { $lte: new Date() } },
+            {
+              $or: [{ for: year_dept }, { for: "All" }],
+            },
+          ]
+        }
+      }
+    ])
+    console.log(announcements);
     
+    
+
     return res
     .json(
         new ApiResponse(
@@ -52,9 +69,11 @@ const getStatistics=asyncHandler(async(req,res)=>{
                 name:name,
                 activeForms:forms.length,
                 activePolls:polls.length,
+                polls:polls[0],
                 activeEvents:events.length,
                 valutItems:valutItems.length,
-                forms:recentForms
+                forms:recentForms,
+                announcements:announcements
             },
             "cies fetched successfully"
         )
