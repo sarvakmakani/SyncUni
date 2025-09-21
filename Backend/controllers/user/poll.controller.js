@@ -97,10 +97,12 @@ const votePoll = asyncHandler(async(req,res)=>{
       }
     });
     
+    const updatedPoll = await Poll.findById(id);
+    if (!updatedPoll) throw new ApiError(404, "Updated poll not found");
 
     return res
     .json(
-        new ApiResponse(200,vote,"voted successfully")
+        new ApiResponse(200,updatedPoll,"voted successfully")
     )
 })
 

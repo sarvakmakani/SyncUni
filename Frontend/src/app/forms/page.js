@@ -100,7 +100,7 @@ export default function FormsPage() {
                   <div className="flex items-center text-gray-300 text-sm mb-4">
                     <User className="h-4 w-4 mr-2 text-gray-400" />
                     <span className="font-medium">
-                      Created By:  Prof. {form.uploadedBy.name}
+                      Created By: {'  Prof. '+form.uploadedBy.name || 'Unknown'}
                     </span>
                   </div>
 
