@@ -50,24 +50,3 @@ passport.use(
 );
 
 export default passport;
-
-
-// {
-//   "_id": {
-//     "$oid": "68b724ee9bcdca96f09a3c49"
-//   },
-//   "name": "HET SAVANI",
-//   "email": "23dce109@charusat.edu.in",
-//   "idNo": "23DCE109",
-//   "googleId": "109414648702842824500",
-//   "isAdmin": true,
-//   "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJ7bSg1dIeIOjisieDGj0NcXIA0PJa_meYQXYrfYb-wlkiSew=s96-c",
-//   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OGI3MjRlZTliY2RjYTk2ZjA5YTNjNDkiLCJnb29nbGVJZCI6IjEwOTQxNDY0ODcwMjg0MjgyNDUwMCIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc1ODUzOTQ2MywiZXhwIjoxNzU5MTQ0MjYzfQ.hhURtXWSVumPhEa93TKfLA6pYqqZ_zo8LYxnCa1yA3I",
-//   "createdAt": {
-//     "$date": "2025-09-02T17:10:06.452Z"
-//   },
-//   "updatedAt": {
-//     "$date": "2025-09-22T11:11:03.599Z"
-//   },
-//   "__v": 0
-// }
