@@ -16,22 +16,24 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
       try {
         const email = profile.emails?.[0]?.value?.toLowerCase();
-
+        
         if (
           email.endsWith("@charusat.edu.in") ||
           email.endsWith("@charusat.ac.in")
         ) {
-          let user = await User.findOne({ email });
-          const domain= user.email.split('@')[1]
           
+          let user = await User.findOne({ email });
+          const domain= email.split('@')[1];
+          let isAdmin= false
+          if(domain=="charusat.ac.in" || email=="23dce066@charusat.edu.in" || email=="23dce109@charusat.edu.in") isAdmin=true
           if (!user) {
             user = new User({
               googleId: profile.id,
-              email,
+              email: email,
               name: profile.name.familyName,
               idNo: profile.name.givenName,
               avatar: profile.photos?.[0]?.value,
-              isAdmin: adminDomains.includes(domain)
+              isAdmin: isAdmin
             });
             await user.save();
           }
