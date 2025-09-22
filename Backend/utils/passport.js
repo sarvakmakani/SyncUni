@@ -24,6 +24,11 @@ passport.use(
           let user = await User.findOne({ email });
           const domain= user.email.split('@')[1]
           
+          let isAdmin = false
+          if(domain == "charusat.ac.in"){
+            isAdmin = true
+          }
+      
           if (!user) {
             user = new User({
               googleId: profile.id,
@@ -31,7 +36,7 @@ passport.use(
               name: profile.name.familyName,
               idNo: profile.name.givenName,
               avatar: profile.photos?.[0]?.value,
-              isAdmin: adminDomains.includes(domain)
+              isAdmin: isAdmin
             });
             await user.save();
           }
