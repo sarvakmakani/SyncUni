@@ -34,6 +34,7 @@ passport.use(
               idNo: profile.name.givenName,
               avatar: profile.photos?.[0]?.value,
               isAdmin: isAdmin
+              isAdmin: isAdmin
             });
             await user.save();
           }

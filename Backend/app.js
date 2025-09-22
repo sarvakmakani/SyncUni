@@ -30,6 +30,7 @@ import adminFormRouter from "./routes/admin/form.route.js";
 import adminPollRouter from "./routes/admin/poll.route.js";
 import adminVaultRouter from "./routes/admin/vault.route.js";
 import adminNotificationRouter from "./routes/admin/notification.route.js";
+import adminDashboardRouter from "./routes/admin/dashboard.route.js"
 
 app.use("/admin/cie",adminCieRouter)
 app.use("/admin/event",adminEventRouter)
@@ -37,6 +38,7 @@ app.use("/admin/form",adminFormRouter)
 app.use("/admin/poll",adminPollRouter)
 app.use("/admin/vault",adminVaultRouter)
 app.use("/admin/notification",adminNotificationRouter)
+app.use("/admin/dashboard",adminDashboardRouter)
 
 import authRouter from "./routes/user/auth.route.js";
 import cieRouter from "./routes/user/cie.route.js";

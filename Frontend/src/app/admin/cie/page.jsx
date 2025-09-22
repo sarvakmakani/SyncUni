@@ -87,7 +87,7 @@ export default function CIEPage() {
         
         // After a successful update, re-fetch to ensure data integrity
         await fetchAnnouncements(); 
-        toast.success("Announcement updated successfully!");
+        toast.success("cie updated successfully!");
         setEditingAnnouncementId(null);
       } else {
         // Add new announcement
@@ -99,7 +99,7 @@ export default function CIEPage() {
         
         // After a successful create, re-fetch the data
         await fetchAnnouncements();
-        toast.success("Announcement posted successfully!");
+        toast.success("cie posted successfully!");
       }
 
       // Reset form
