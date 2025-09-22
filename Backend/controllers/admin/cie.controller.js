@@ -93,7 +93,7 @@ const getCies = asyncHandler(async(req,res)=>{
             }
         }
     ])
-
+    
     return res.json(
         new ApiResponse(200,result[0],"cies fetched successfully")
     )

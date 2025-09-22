@@ -76,7 +76,7 @@ const getForms = asyncHandler(async(req,res)=>{
         },
     }
 
-    const result=await Form.aggregate([
+    const result=await Form.aggregate([     
         {
             $facet:{
                 pastForms:[
@@ -87,7 +87,7 @@ const getForms = asyncHandler(async(req,res)=>{
                 ],
             
                 upcomingForms:[
-                    { $match: { deadline: { $gt: new Date() } } },
+                    { $match: { deadline: { $gte: new Date() } } },
                     userLookup,
                     {$unwind:'$uploadedBy'},
                     formProjection
@@ -95,6 +95,9 @@ const getForms = asyncHandler(async(req,res)=>{
             }
         }
     ])
+
+    console.log(result[0]);
+    
 
     return res.json(
         new ApiResponse(200,result[0],"form fetched successfully")

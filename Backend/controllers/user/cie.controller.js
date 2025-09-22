@@ -7,7 +7,6 @@ const getCies = asyncHandler(async(req,res)=>{
     const {idNo} =req.user
     
     const year_dept = idNo.slice(0,-3)
-    console.log(year_dept);
 
     let cies=await Cie.aggregate([
         {
@@ -50,6 +49,8 @@ const getCies = asyncHandler(async(req,res)=>{
             }
         }
     ])
+    
+    console.log(cies);
     
     return res
     .json(
