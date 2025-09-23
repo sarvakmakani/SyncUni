@@ -118,9 +118,20 @@ const getPolls = asyncHandler(async(req,res)=>{
     )
 })
 
+const deletePoll=asyncHandler(async(req,res)=>{
+    const {id}=req.params
+    const poll=await Poll.findById(id)
+    if(!poll) throw new ApiError(404,"poll not found")
+    
+    await Poll.findByIdAndDelete(id)
+    return res.json(
+        new ApiResponse(200,"poll deleted successfully")
+    )
+})
 
 export {
     addPoll,
     updatePoll,
-    getPolls
+    getPolls,
+    deletePoll
 }
