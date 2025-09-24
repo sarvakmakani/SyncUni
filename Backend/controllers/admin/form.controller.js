@@ -24,6 +24,20 @@ const addForm = asyncHandler(async(req,res)=>{
     })
     if(!form) throw new ApiError(500,"Form creating failed")
     
+    let students = await User.find({},"email");
+        
+    if(forWhom!="All"){
+        students = students.filter(student => student.email.startsWith(forWhom.toLowerCase()));
+    }
+
+    students.forEach(student => {
+        sendEmail(
+        student.email,
+        "New FORM Added",
+        `Dear Student, new FORM have been published. Please check the portal.`
+        ).catch(err => console.error("Email failed:", err));
+    });
+    
     return res.json(
         new ApiResponse(201,form,"form added successfully")
     )

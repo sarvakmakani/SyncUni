@@ -16,6 +16,20 @@ const addNotification=asyncHandler(async(req,res)=>{
     })
     if(!notification) throw new ApiError(500,"notification creation failed")
 
+    let students = await User.find({},"email");
+        
+    if(forWhom!="All"){
+        students = students.filter(student => student.email.startsWith(forWhom.toLowerCase()));
+    }
+
+    students.forEach(student => {
+        sendEmail(
+        student.email,
+        "New ANNOUNCEMENT Added",
+        `Dear Student, new ANNOUNCEMENT have been published. Please check the portal.`
+        ).catch(err => console.error("Email failed:", err));
+    });
+
     return res.status(201).json(
         new ApiResponse(201,{},"notification created successfully")
     )

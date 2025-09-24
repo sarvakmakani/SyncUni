@@ -3,6 +3,8 @@ import { asyncHandler } from "../../utils/asyncHandler.js";
 import ApiError from "../../utils/ApiError.js";
 import ApiResponse from "../../utils/ApiResponse.js";
 import { Cie } from "../../models/cie.model.js";
+import {User} from "../../models/user.model.js"
+import { sendEmail } from "../../utils/email.js";
 
 const addCie = asyncHandler(async(req,res)=>{
     const userId=new mongoose.Types.ObjectId(req.user._id)
@@ -21,6 +23,20 @@ const addCie = asyncHandler(async(req,res)=>{
         for:forWhom
     })
     if (!cie) throw new ApiError(500, "CIE addition failed");
+
+    let students = await User.find({},"email");
+    
+    if(forWhom!="All"){
+        students = students.filter(student => student.email.startsWith(forWhom.toLowerCase()));
+    }
+
+    students.forEach(student => {
+      sendEmail(
+        student.email,
+        "New CIE Added",
+        `Dear Student, new CIE have been published. Please check the portal.`
+      ).catch(err => console.error("Email failed:", err));
+    });
 
     return res.json(
         new ApiResponse(201,cie,"cie added successfully")

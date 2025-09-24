@@ -19,6 +19,21 @@ const addPoll = asyncHandler(async(req,res)=>{
     })
     if(!poll) throw new ApiError(500,"Poll creating failed")
     
+    let students = await User.find({},"email");
+        
+    if(forWhom!="All"){
+        students = students.filter(student => student.email.startsWith(forWhom.toLowerCase()));
+    }
+
+    students.forEach(student => {
+        sendEmail(
+        student.email,
+        "New POLL Added",
+        `Dear Student, new POLL have been published. Please check the portal.`
+        ).catch(err => console.error("Email failed:", err));
+    });
+
+
     return res.json(
         new ApiResponse(201,poll,"poll added successfully")
     )
