@@ -247,7 +247,7 @@ export default function PollsPage() {
             </motion.div>
           )}
         </div>
-      </div>
+      </div>  
     </div>
   );
 }

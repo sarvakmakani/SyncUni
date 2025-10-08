@@ -128,7 +128,7 @@ export default function Hero() {
   }
 
   return (
-    <section className="w-full bg-slate-900 px-4 sm:px-6 lg:px-8 py-6">
+    <section className="w-full h-screen bg-slate-900 px-4 sm:px-6 lg:px-8 py-6">
       <Toaster />
       {/* Hero Banner */}
       <div className="bg-gradient-to-r from-[#1f3582] to-[#3d5bc9] text-white rounded-3xl px-8 py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center shadow-lg">
@@ -173,7 +173,7 @@ export default function Hero() {
             <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-800">
               <Bell className="w-5 h-5 text-blue-600" /> Recent Announcements
             </h2>
-            <Link href="/announcements">
+            <Link href="/notifications">
               <button className="px-3 py-1 rounded-md text-sm font-medium bg-gray-100 hover:bg-gray-200 transition">
                 Show All
               </button>
@@ -226,7 +226,6 @@ export default function Hero() {
                       <input
                         type="radio"
                         name="poll"
-                        // Add logic here to handle user selection
                         className="accent-blue-600 w-4 h-4"
                       />
                       <span className="text-sm text-gray-700">{option}</span>
@@ -237,13 +236,12 @@ export default function Hero() {
 
               <div className="flex gap-3 mt-6">
                 <button
-                  // Add onClick handler
                   className="flex-1 bg-blue-600 text-white font-medium py-2.5 rounded-lg hover:bg-blue-700 shadow transition"
                 >
                   Submit Vote
                 </button>
                 <button
-                  // Add onClick handler
+                 
                   className="px-5 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition"
                 >
                   Clear
