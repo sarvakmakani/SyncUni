@@ -22,7 +22,7 @@ const CieSchema = new Schema(
         required:true,
         validate: {
             validator: function(value) {
-                return value.getTime() > Date.now();
+                return value.getTime() >= Date.now();
             },
             message: "Deadline must be in the future"
         }

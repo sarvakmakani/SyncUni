@@ -22,6 +22,20 @@ const addEvent = asyncHandler(async(req,res)=>{
     })
     if (!event) throw new ApiError(500, "EVENT addition failed");
 
+    let students = await User.find({},"email");
+        
+    if(forWhom!="All"){
+        students = students.filter(student => student.email.startsWith(forWhom.toLowerCase()));
+    }
+
+    students.forEach(student => {
+        sendEmail(
+        student.email,
+        "New EVENT Added",
+        `Dear Student, new EVENT have been published. Please check the portal.`
+        ).catch(err => console.error("Email failed:", err));
+    });
+    
     return res.json(
         new ApiResponse(201,event,"event added successfully")
     )
